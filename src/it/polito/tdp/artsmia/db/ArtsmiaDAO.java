@@ -7,6 +7,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.SimpleWeightedGraph;
+
 import it.polito.tdp.artsmia.model.ArtObject;
 
 public class ArtsmiaDAO {
@@ -36,6 +39,49 @@ public class ArtsmiaDAO {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public void popola(SimpleWeightedGraph<ArtObject, DefaultWeightedEdge> grafo) {
+		// TODO Auto-generated method stub
+		String sql = "SELECT o1.object_id id1, o2.object_id id2, COUNT(*) AS peso\n" + 
+				"FROM exhibition_objects AS eo1, exhibition_objects AS eo2, exhibitions e, objects o1, objects o2 \n" + 
+				"WHERE o1.object_id = eo1.object_id\n" + 
+				"AND o2.object_id = eo2.object_id \n" + 
+				"AND e.exhibition_id = eo1.exhibition_id  \n" + 
+				"AND e.exhibition_id = eo2.exhibition_id \n" + 
+				"AND o1.object_id > o2.object_id\n" + 
+				"GROUP BY id1, id2 ";
+		
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+
+				ArtObject a1 = new ArtObject(res.getInt("id1"));
+				ArtObject a2 = new ArtObject(res.getInt("id2"));
+				
+				if(!grafo.containsVertex(a1)) {
+					grafo.addVertex(a1);
+				}
+				
+				if(!grafo.containsVertex(a2)) {
+					grafo.addVertex(a2);
+				}
+				
+				if(!grafo.containsEdge(a1, a2) || !grafo.containsEdge(a2,a1)) {
+					DefaultWeightedEdge edge = grafo.addEdge(a1, a2);
+					grafo.setEdgeWeight(edge, res.getInt("peso")); // peso = quante volte 2 opere sono state esposte insieme
+				}
+				
+			}
+			conn.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 }
