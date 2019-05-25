@@ -7,7 +7,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 public class DBConnect {
 
-	private static String jdbcURL = "jdbc:mysql://localhost/artsmia?serverTimezone=Europe/Rome";
+	private static String jdbcURL = "jdbc:mysql://localhost/dizionario?serverTimezone=Europe/Rome";
 
 	private static HikariDataSource ds = null;
 
